@@ -34,20 +34,22 @@ def uni(string, encoding = 'utf-8'):
         if not isinstance(string, unicode):
            string = unicode(string, encoding)
 
-	return string
+    return string
 
 def ascii(string):
     if isinstance(string, basestring):
         if isinstance(string, unicode):
            string = string.encode('ascii', 'ignore')
 
-	return string
+    return string
 
-ADDON_ID = 'script.pseudotv'
-REAL_SETTINGS = xbmcaddon.Addon(id=ADDON_ID)
-ADDON_INFO = REAL_SETTINGS.getAddonInfo('path')
-
-VERSION = REAL_SETTINGS.getAddonInfo('version')
+ADDON     = xbmcaddon.Addon(id='script.pseudotv')
+ADDON_ID  = ADDON.getAddonInfo('id')
+ADDON_NAME= ADDON.getAddonInfo('name')
+LANGUAGE  = ADDON.getLocalizedString
+CWD       = ADDON.getAddonInfo('path').decode("utf-8")
+VERSION   = ADDON.getAddonInfo('version')
+ICON      = ADDON.getAddonInfo('icon')
 
 TIMEOUT = 15 * 1000
 PREP_CHANNEL_TIME = 60 * 60 * 24 * 5
@@ -62,49 +64,33 @@ MODE_RANDOM = 8
 MODE_REALTIME = 16
 MODE_STARTMODES = MODE_RANDOM | MODE_REALTIME | MODE_RESUME
 
-SETTINGS_LOC = REAL_SETTINGS.getAddonInfo('profile')
+SETTINGS_LOC = ADDON.getAddonInfo('profile').decode("utf-8")
 CHANNEL_SHARING = False
 LOCK_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache' + '/'))
 
-if REAL_SETTINGS.getSetting('ChannelSharing') == "true":
+if ADDON.getSetting('ChannelSharing') == "true":
     CHANNEL_SHARING = True
-    LOCK_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache' + '/'))
+    LOCK_LOC = xbmc.translatePath(os.path.join(ADDON.getSetting('SettingsFolder'), 'cache' + '/'))
 
-IMAGES_LOC = xbmc.translatePath(os.path.join(ADDON_INFO, 'resources', 'images' + '/'))
-LOGOS_LOC = xbmc.translatePath(os.path.join(ADDON_INFO, 'resources', 'logos' + '/'))
+IMAGES_LOC = xbmc.translatePath(os.path.join(CWD, 'resources', 'images' + '/'))
+LOGOS_LOC = xbmc.translatePath(os.path.join(CWD, 'resources', 'logos' + '/'))
 CHANNELS_LOC = os.path.join(SETTINGS_LOC, 'cache' + '/')
 GEN_CHAN_LOC = os.path.join(CHANNELS_LOC, 'generated' + '/')
 MADE_CHAN_LOC = os.path.join(CHANNELS_LOC, 'stored' + '/')
 CHANNELBUG_LOC = xbmc.translatePath(os.path.join(CHANNELS_LOC, 'ChannelBug' + '/'))
 
-SHORT_CLIP_ENUM = [15,30,60,90,120,180,240,300,360]
-
-MEDIA_LIMIT = {}
-MEDIA_LIMIT['0'] = 10            
-MEDIA_LIMIT['1'] = 25           
-MEDIA_LIMIT['2'] = 50            
-MEDIA_LIMIT['3'] = 100
-MEDIA_LIMIT['4'] = 250
-MEDIA_LIMIT['5'] = 500
-MEDIA_LIMIT['6'] = 1000
-MEDIA_LIMIT['7'] = 0
-
-NUM_COLOUR = {}
-NUM_COLOUR['0'] = '0xFFFF0000'        
-NUM_COLOUR['1'] = '0xFF00FF00'           
-NUM_COLOUR['2'] = '0xFF0000FF'            
-NUM_COLOUR['3'] = '0xFFFFFF00'
-NUM_COLOUR['4'] = '0xFF00FFFF'
-NUM_COLOUR['5'] = '0xFFFF00FF'
-NUM_COLOUR['6'] = '0xFF808080'
-NUM_COLOUR['7'] = '0xFFFFFFFF'
+SHORT_CLIP_ENUM = [15, 30, 60, 90, 120, 180, 240, 300, 360]
+SEEK_FORWARD = [10, 30, 60, 180, 300, 600, 1800]
+SEEK_BACKWARD = [-10, -30, -60, -180, -300, -600, -1800]
+MEDIA_LIMIT = [10, 25, 50, 100, 250, 500, 1000, 0]
+NUM_COLOUR = ['0xFFFF0000', '0xFF00FF00', '0xFF0000FF', '0xFFFFFF00', '0xFF00FFFF', '0xFFFFA500', '0xFFFF00FF', '0xFF808080', '0xFFFFFFFF']
 
 GlobalFileLock = FileLock()
 ADDON_SETTINGS = Settings.Settings()
 
 TIME_BAR = 'pstvTimeBar.png'
-BUTTON_FOCUS = 'pstvButtonFocus.png'
 BUTTON_NO_FOCUS = 'pstvButtonNoFocus.png'
+BUTTON_FOCUS = 'pstvButtonFocus.png'
 
 RULES_ACTION_START = 1
 RULES_ACTION_JSON = 2

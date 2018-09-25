@@ -80,7 +80,7 @@ class AdvancedConfig(xbmcgui.WindowXMLDialog):
             else:
                 dlg = xbmcgui.Dialog()
 
-                if dlg.yesno(xbmc.getLocalizedString(190), REAL_SETTINGS.getLocalizedString(30019)):
+                if dlg.yesno(xbmc.getLocalizedString(190), LANGUAGE(30019)):
                     self.saveRules()
 
                 self.close()
@@ -299,6 +299,23 @@ class AdvancedConfig(xbmcgui.WindowXMLDialog):
             self.selectedRuleIndex = -1
             self.consolidateRules()
             self.makeList()
+        elif controlId == 115:      # Ok button
+            if self.selectedRuleIndex > -1:
+                xbmc.executebuiltin("SetProperty(itempress,100)")
+                xbmc.executebuiltin("Control.SetFocus(120)")
+                self.lineSelected = 0
+                self.onClick(130)
+            else:
+                self.saveRules()
+                self.close()
+        elif controlId == 116:      # Cancel button
+            if self.selectedRuleIndex > -1:
+                xbmc.executebuiltin("SetProperty(itempress,100)")
+                xbmc.executebuiltin("Control.SetFocus(120)")
+                self.lineSelected = 0
+                self.close()
+            else:
+                self.close()
 
 
     def consolidateRules(self):
@@ -331,5 +348,5 @@ class AdvancedConfig(xbmcgui.WindowXMLDialog):
         for i in range(20 - strlen / 2):
             spacesstr += ' '
 
-        self.getControl(131).setLabel('<-' + spacesstr + self.getRuleName(self.selectedRuleIndex) + spacesstr + '->')
+        self.getControl(131).setLabel('<<' + spacesstr + self.getRuleName(self.selectedRuleIndex) + spacesstr + '>>')
         self.setupOptions()

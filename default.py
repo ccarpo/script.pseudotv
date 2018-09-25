@@ -16,24 +16,44 @@
 # You should have received a copy of the GNU General Public License
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
-
-import xbmc, xbmcgui
-import xbmcaddon
+import xbmc, xbmcgui, xbmcaddon
+import sys
+import os
 
 
 # Script constants
-__scriptname__ = "PseudoTV"
-__author__     = "Jason102"
-__url__        = "http://github.com/Jasonra/XBMC-PseudoTV"
-__settings__   = xbmcaddon.Addon(id='script.pseudotv')
-__cwd__        = __settings__.getAddonInfo('path')
+ADDON       = xbmcaddon.Addon(id='script.pseudotv')
+CWD         = ADDON.getAddonInfo('path').decode("utf-8")
+RESOURCE    = xbmc.translatePath(os.path.join(CWD, 'resources', 'lib').encode("utf-8")).decode("utf-8")
 
+sys.path.append(RESOURCE)
 
-# Adapting a solution from ronie (http://forum.xbmc.org/showthread.php?t=97353)
+SkinID = xbmc.getSkinDir()
+if SkinID != 'skin.estuary':
+    import MyFont
+    if MyFont.getSkinRes() == '1080i':
+        MyFont.addFont("PseudoTv10", "Lato-Regular.ttf", "24")
+        MyFont.addFont("PseudoTv12", "Lato-Regular.ttf", "25")
+        MyFont.addFont("PseudoTv13", "Lato-Regular.ttf", "30")
+        MyFont.addFont("PseudoTv14", "Lato-Regular.ttf", "33")
+    else:
+        MyFont.addFont("PseudoTv10", "Lato-Regular.ttf", "14")
+        MyFont.addFont("PseudoTv12", "Lato-Regular.ttf", "16")
+        MyFont.addFont("PseudoTv13", "Lato-Regular.ttf", "20")
+        MyFont.addFont("PseudoTv14", "Lato-Regular.ttf", "22")
+
+def Start():
+    if xbmc.Player().isPlaying():
+        xbmc.Player().stop()
+    import Overlay as Overlay
+    MyOverlayWindow = Overlay.TVOverlay("script.pseudotv.TVOverlay.xml", CWD, "default")
+    del MyOverlayWindow
+    xbmcgui.Window(10000).setProperty("PseudoTVRunning", '')
+
 if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
     xbmcgui.Window(10000).setProperty("PseudoTVRunning", "True")
     shouldrestart = False
     if shouldrestart == False:
-        xbmc.executebuiltin('RunScript("' + __cwd__ + '/pseudotv.py' + '")')
+        Start()
 else:
     xbmc.log('script.PseudoTV - Already running, exiting', xbmc.LOGERROR)

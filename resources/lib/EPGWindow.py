@@ -39,43 +39,29 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.rowCount = 6
         self.channelButtons = [None] * self.rowCount
         self.buttonCache = []
-        self.buttonCount = 0
         self.actionSemaphore = threading.BoundedSemaphore()
         self.lastActionTime = time.time()
         self.channelLogos = ''
         self.textcolor = "FFFFFFFF"
         self.focusedcolor = "FF7d7d7d"
         self.clockMode = 0
-        self.textfont  = "font14"
+        self.textfont  = "font13"
 
-        # Decide whether to use the current skin or the default skin.  If the current skin has the proper
-        # image, then it should work.
-        if os.path.exists(xbmc.translatePath(os.path.join(ADDON_INFO, 'resources', 'skins', xbmc.getSkinDir(), 'media'))):
-            self.mediaPath = xbmc.translatePath(os.path.join(ADDON_INFO, 'resources', 'skins', xbmc.getSkinDir(), 'media')) + '/'
-        elif os.path.exists(xbmc.translatePath('special://skin/media/' + ADDON_ID + '/' + TIME_BAR)):
-            self.mediaPath = xbmc.translatePath('special://skin/media/' + ADDON_ID + '/')
-        elif os.path.exists(xbmc.translatePath('special://skin/media/' + TIME_BAR)):
-            self.mediaPath = xbmc.translatePath('special://skin/media/')
-        elif xbmc.skinHasImage(xbmc.translatePath(ADDON_ID + '/' + TIME_BAR)):
-            self.mediaPath = xbmc.translatePath(ADDON_ID + '/')
-        elif xbmc.skinHasImage(TIME_BAR):
-            self.mediaPath = ''
+        # Set media path.
+        if os.path.exists(xbmc.translatePath(os.path.join(CWD, 'resources', 'skins', xbmc.getSkinDir(), 'media'))):
+            self.mediaPath = xbmc.translatePath(os.path.join(CWD, 'resources', 'skins', xbmc.getSkinDir(), 'media' + '/'))
         else:
-            self.mediaPath = xbmc.translatePath(os.path.join(ADDON_INFO, 'resources', 'skins', 'default', 'media')) + '/'
+            self.mediaPath = xbmc.translatePath(os.path.join(CWD, 'resources', 'skins', 'default', 'media' + '/'))
 
         self.log('Media Path is ' + self.mediaPath)
 
         # Use the given focus and non-focus textures if they exist.  Otherwise use the defaults.
-        if os.path.exists(self.mediaPath + BUTTON_FOCUS):
-            self.textureButtonFocus = self.mediaPath + BUTTON_FOCUS
-        elif xbmc.skinHasImage(self.mediaPath + BUTTON_FOCUS):
+        if xbmc.skinHasImage(self.mediaPath + BUTTON_FOCUS):
             self.textureButtonFocus = self.mediaPath + BUTTON_FOCUS
         else:
             self.textureButtonFocus = 'button-focus.png'
 
-        if os.path.exists(self.mediaPath + BUTTON_NO_FOCUS):
-            self.textureButtonNoFocus = self.mediaPath + BUTTON_NO_FOCUS
-        elif xbmc.skinHasImage(self.mediaPath + BUTTON_NO_FOCUS):
+        if xbmc.skinHasImage(self.mediaPath + BUTTON_NO_FOCUS):
             self.textureButtonNoFocus = self.mediaPath + BUTTON_NO_FOCUS
         else:
             self.textureButtonNoFocus = 'button-nofocus.png'
@@ -95,12 +81,12 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
     def setTimeLabels(self, thetime):
         self.log('setTimeLabels')
         now = datetime.datetime.fromtimestamp(thetime)
-        self.getControl(104).setLabel(now.strftime('%A, %b %d'))
+        self.getControl(104).setLabel(now.strftime('%A, %d %B %Y').lstrip("0").replace(" 0", " "))
         delta = datetime.timedelta(minutes=30)
 
         for i in range(3):
             if self.clockMode == "0":
-                self.getControl(101 + i).setLabel(now.strftime("%I:%M%p").lower())
+                self.getControl(101 + i).setLabel(now.strftime("%I:%M %p").lstrip("0").replace(" 0", " "))
             else:
                 self.getControl(101 + i).setLabel(now.strftime("%H:%M"))
 
@@ -119,6 +105,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         timew = self.getControl(120).getWidth()
         timeh = self.getControl(120).getHeight()
         self.currentTimeBar = xbmcgui.ControlImage(timex, timey, timew, timeh, self.mediaPath + TIME_BAR)
+
         self.addControl(self.currentTimeBar)
 
         try:
@@ -210,6 +197,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         timeh = self.getControl(120).getHeight()
         basecur = curchannel
         self.toRemove.append(self.currentTimeBar)
+        EpgLogo = ADDON.getSetting('ShowEpgLogo')
         myadds = []
 
         for i in range(self.rowCount):
@@ -232,9 +220,10 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 pass
 
             try:
-                self.getControl(321 + i).setImage(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png")
-                if not FileAccess.exists(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png"):
-                    self.getControl(321 + i).setImage(IMAGES_LOC + "Default.png")
+                if (EpgLogo == 'true'):
+                    self.getControl(321 + i).setImage(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png")
+                    if not FileAccess.exists(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png"):
+                        self.getControl(321 + i).setImage(IMAGES_LOC + "Default.png")
             except:
                 pass
 
@@ -242,12 +231,12 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
         if time.time() >= starttime and time.time() < starttime + 5400:
             dif = int((starttime + 5400 - time.time()))
-            self.currentTimeBar.setPosition(int((basex + basew - 2) - (dif * (basew / 5400.0))), timey)
+            self.currentTimeBar.setPosition(int((basex + basew - (timew / 2)) - (dif * (basew / 5400.0))), timey)
         else:
             if time.time() < starttime:
-                self.currentTimeBar.setPosition(basex + 2, timey)
+                self.currentTimeBar.setPosition(basex, timey)
             else:
-                 self.currentTimeBar.setPosition(basex + basew - 2 - timew, timey)
+                 self.currentTimeBar.setPosition(basex + basew - timew, timey)
 
         myadds.append(self.currentTimeBar)
 
@@ -299,7 +288,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
             # if the channel is paused, then only 1 button needed
             if self.MyOverlayWindow.channels[curchannel - 1].isPaused:
-                self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, self.MyOverlayWindow.channels[curchannel - 1].getCurrentTitle() + " (paused)", focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, textColor=self.textcolor, focusedColor=self.focusedcolor))
+                self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, self.MyOverlayWindow.channels[curchannel - 1].getCurrentTitle() + " (paused)", focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, font=self.textfont, textColor=self.textcolor, shadowColor='0xAA000000', focusedColor=self.focusedcolor))
             else:
                 # Find the show that was running at the given time
                 # Use the current time and show offset to calculate it
@@ -372,7 +361,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
                     if shouldskip == False and width >= 30:
                         mylabel = self.MyOverlayWindow.channels[curchannel - 1].getItemTitle(playlistpos)
-                        self.channelButtons[row].append(xbmcgui.ControlButton(xpos, basey, width, baseh, mylabel, focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
+                        self.channelButtons[row].append(xbmcgui.ControlButton(xpos, basey, width, baseh, mylabel, focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, font=self.textfont, shadowColor='0xAA000000', textColor=self.textcolor, focusedColor=self.focusedcolor))
 
                     totaltime += tmpdur
                     reftime += tmpdur
@@ -384,7 +373,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
                 # If there were no buttons added, show some default button
                 if len(self.channelButtons[row]) == 0:
-                    self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, self.MyOverlayWindow.channels[curchannel - 1].name, focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, textColor=self.textcolor, focusedColor=self.focusedcolor))
+                    self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, self.MyOverlayWindow.channels[curchannel - 1].name, focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, font=self.textfont, textColor=self.textcolor, shadowColor='0xAA000000', focusedColor=self.focusedcolor))
         except:
             self.log("Exception in setButtons", xbmc.LOGERROR)
             self.log(traceback.format_exc(), xbmc.LOGERROR)
@@ -678,7 +667,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
         self.getControl(500).setLabel(self.MyOverlayWindow.channels[newchan - 1].getItemTitle(plpos))
         self.getControl(501).setLabel(self.MyOverlayWindow.channels[newchan - 1].getItemEpisodeTitle(plpos))
-        self.getControl(502).setLabel(self.MyOverlayWindow.channels[newchan - 1].getItemDescription(plpos))
+        self.getControl(502).setText(self.MyOverlayWindow.channels[newchan - 1].getItemDescription(plpos))
         self.getControl(503).setImage(self.channelLogos + ascii(self.MyOverlayWindow.channels[newchan - 1].name) + '.png')
         if not FileAccess.exists(self.channelLogos + ascii(self.MyOverlayWindow.channels[newchan - 1].name) + '.png'):
             self.getControl(503).setImage(IMAGES_LOC + 'Default.png')
