@@ -576,7 +576,7 @@ class ChannelList:
         try:
             fle = FileAccess.open(flename, "w")
         except:
-            self.Error(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
+            self.log(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
             return ''
 
         self.writeXSPHeader(fle, "episodes", self.getChannelName(1, network))
@@ -618,7 +618,7 @@ class ChannelList:
         try:
             fle = FileAccess.open(flename, "w")
         except:
-            self.Error(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
+            self.log(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
             return ''
 
         self.writeXSPHeader(fle, 'episodes', self.getChannelName(6, show))
@@ -633,12 +633,18 @@ class ChannelList:
 
 
     def createGenreMixedPlaylist(self, genre):
-        flename = xbmc.makeLegalFilename(GEN_CHAN_LOC + 'Mixed_' + genre + '.xsp')
 
+        if isinstance(genre, str):
+            filegenre = genre.decode('ascii', 'ignore').encode('ascii') #note: this removes the character and encodes back to string.
+        elif isinstance(genre, unicode):
+            filegenre = genre.encode('ascii', 'ignore')
+
+        flename = xbmc.makeLegalFilename(u''.join((GEN_CHAN_LOC, 'Mixed_', filegenre, '.xsp')).encode('utf-8').strip())
+        
         try:
             fle = FileAccess.open(flename, "w")
         except:
-            self.Error(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
+            self.log(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
             return ''
 
         epname = os.path.basename(self.createGenrePlaylist('episodes', 3, genre))
@@ -652,12 +658,19 @@ class ChannelList:
 
 
     def createGenrePlaylist(self, pltype, chtype, genre):
-        flename = xbmc.makeLegalFilename(GEN_CHAN_LOC + pltype + '_' + genre + '.xsp')
 
+        if isinstance(genre, str):
+            filegenre = genre.decode('ascii', 'ignore').encode('ascii') #note: this removes the character and encodes back to string.
+        elif isinstance(genre, unicode):
+            filegenre = genre.encode('ascii', 'ignore')
+
+        
+        flename = xbmc.makeLegalFilename(u''.join((GEN_CHAN_LOC, pltype, '_', filegenre, '.xsp')).encode('utf-8').strip())
+        
         try:
             fle = FileAccess.open(flename, "w")
         except:
-            self.Error(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
+            self.log(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
             return ''
 
         self.writeXSPHeader(fle, pltype, self.getChannelName(chtype, genre))
@@ -676,7 +689,7 @@ class ChannelList:
         try:
             fle = FileAccess.open(flename, "w")
         except:
-            self.Error(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
+            self.log(LANGUAGE(30034) + ' ' + flename, xbmc.LOGERROR)
             return ''
 
         self.writeXSPHeader(fle, "movies", self.getChannelName(2, studio))
